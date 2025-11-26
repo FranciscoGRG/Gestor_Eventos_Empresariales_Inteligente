@@ -1,0 +1,45 @@
+version: '3.8'
+services:
+  db_users:
+    image: postgres:14
+    container_name: db_users
+    environment:
+      - POSTGRES_DB=users_db
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_users_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  db_events:
+    image: postgres:14
+    container_name: db_events
+    environment:
+      - POSTGRES_DB=events_db
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5433:5432"
+    volumes:
+      - db_events_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  db_registration:
+    image: postgres:14
+    container_name: db_registration
+    environment:
+      - POSTGRES_DB=registrations_db
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5434:5432"
+    volumes:
+      - db_registrations_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  db_users_data:
+  db_events_data:
+  db_registrations_data:
