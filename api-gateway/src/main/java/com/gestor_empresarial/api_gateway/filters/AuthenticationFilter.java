@@ -46,7 +46,7 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
 
             Mono<String> validationMono = webClientBuilder.build()
                     .get()
-                    .uri("http://users-service/api/v1/security/validate-token")
+                    .uri("http://users-service/api/security/validate-token")
                     .header(HttpHeaders.AUTHORIZATION, authHeader)
                     .retrieve()
                     .onStatus(HttpStatusCode::is4xxClientError, response -> 
