@@ -13,12 +13,12 @@ spring:
           uri: lb://auth-server
           predicates:
             - Path=/api/auth/**
-        - id: event-service
+        - id: events-service
           uri: lb://events-service
           predicates:
             - Path=/api/events/**
         - id: registration-service
-          uri: lb://registrations-service
+          uri: lb://registration-service
           predicates:
           - Path=/api/registrations/**
 

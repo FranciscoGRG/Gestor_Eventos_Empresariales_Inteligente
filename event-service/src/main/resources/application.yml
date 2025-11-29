@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: event-service
+    name: events-service
   datasource:
     url: jdbc:postgresql://localhost:5433/events_db
     username: user

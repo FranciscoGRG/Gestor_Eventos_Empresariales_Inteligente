@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.gestor_empresarial.event_service.dtos.EventRequestDto;
 import com.gestor_empresarial.event_service.dtos.EventResponseDto;
+import com.gestor_empresarial.event_service.dtos.EventStatusUpdateDTO;
 import com.gestor_empresarial.event_service.dtos.EventUpdateRequestDto;
 import com.gestor_empresarial.event_service.services.EventService;
 
@@ -19,10 +20,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-
-
-
 
 
 @RestController
@@ -66,6 +63,11 @@ public class EventController {
     public ResponseEntity<Void> deleteEvent(@PathVariable Long id, @RequestHeader("X-User-ID") Long userId){
         service.deleteEvent(id, userId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}/status")
+    public ResponseEntity<EventResponseDto> updateEventStatus(@PathVariable Long id, @RequestHeader("X-User-ID") Long userId, @RequestBody EventStatusUpdateDTO request) {
+        return ResponseEntity.ok(service.updateEventStatus(id, userId, request));
     }
     
 }

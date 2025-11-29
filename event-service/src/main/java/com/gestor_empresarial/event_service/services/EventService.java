@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.gestor_empresarial.event_service.dtos.EventRequestDto;
 import com.gestor_empresarial.event_service.dtos.EventResponseDto;
+import com.gestor_empresarial.event_service.dtos.EventStatusUpdateDTO;
 import com.gestor_empresarial.event_service.dtos.EventUpdateRequestDto;
 import com.gestor_empresarial.event_service.enums.Status;
 import com.gestor_empresarial.event_service.mappers.EventMapper;
@@ -103,5 +104,23 @@ public class EventService {
                 .collect(Collectors.toList());
 
         return responseDtos;
+    }
+
+    public EventResponseDto updateEventStatus(Long id, Long userId, EventStatusUpdateDTO request) {
+        Event event = repository.findByIdAndOrganizerId(id, userId)
+                .orElseThrow(() -> new RuntimeException("El evento con id: " + id + " no existe o no se encuentra"));
+
+        if (userId != event.getOrganizerId()) {
+            throw new RuntimeException("El id del organizador y del usuario logeado no coinciden");
+        }
+
+        if (event.getStatus() == Status.COMPLETED) {
+            throw new RuntimeException("No se puede actualizar porque el evento ya ha sido completado");
+        }
+
+        event.setStatus(request.newStatus());
+
+        Event eventUpdated = repository.save(event);
+        return mapper.toResponseDto(eventUpdated);
     }
 }
