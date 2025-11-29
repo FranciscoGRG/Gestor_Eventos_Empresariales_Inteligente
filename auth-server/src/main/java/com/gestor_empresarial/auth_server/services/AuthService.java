@@ -47,7 +47,7 @@ public class AuthService {
 
         User userSaved = repository.save(user);
 
-        String token = jwtService.generateToken(userSaved.getEmail(), userSaved.getRoles());
+        String token = jwtService.generateToken(userSaved.getId(), userSaved.getEmail(), userSaved.getRoles());
         return new AuthResponseDto(token, userSaved.getEmail(), userSaved.getRoles()); 
     }
 
@@ -59,7 +59,7 @@ public class AuthService {
             throw new RuntimeException("Usuario o contraseña incorrectos");
         }
 
-        String token = jwtService.generateToken(user.getEmail(), user.getRoles());
+        String token = jwtService.generateToken(user.getId(), user.getEmail(), user.getRoles());
         return new AuthResponseDto(token, user.getEmail(), user.getRoles());
     }
 

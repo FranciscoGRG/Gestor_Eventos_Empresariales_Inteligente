@@ -35,19 +35,20 @@ public class JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateToken(String email, Set<Role> roles) {
+    public String generateToken(Long userId, String email, Set<Role> roles) {
         Map<String, Object> claims = new HashMap<>();
         List<String> roleNames = roles.stream()
                                       .map(Enum::name)
                                       .collect(Collectors.toList());
         claims.put("roles", roleNames);
-        return createToken(claims, email);
+        claims.put("email", email);
+        return createToken(claims, userId);
     }
 
-    private String createToken(Map<String, Object> claims, String subject) {
+    private String createToken(Map<String, Object> claims, Long userId) {
         return Jwts.builder()
                 .setClaims(claims)
-                .setSubject(subject) // email
+                .setSubject(userId.toString()) // email
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
@@ -59,8 +60,12 @@ public class JwtService {
         return (userEmail.equals(userDetails.getUsername())) && !isTokenExpired(token);
     }
 
-    public String extractEmail(String token) {
+    public String extractUserId(String token) {
         return extractClaim(token, Claims::getSubject);
+    }
+
+    public String extractEmail(String token) {
+        return extractAllClaims(token).get("email", String.class);
     }
 
     public String extractRol(String token) {
