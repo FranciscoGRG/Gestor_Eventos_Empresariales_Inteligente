@@ -5,7 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
-@FeignClient(name = "event-service")
+@FeignClient(name = "events-service")
 public interface IEventFeignClient {
     @PostMapping("/api/events/register/{id}")
     ResponseEntity<Void> reserveCapacityAndRegister(@PathVariable Long id);

@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.gestor_empresarial.event_service.dtos.EventRequestDto;
 import com.gestor_empresarial.event_service.dtos.EventResponseDto;
@@ -17,7 +18,6 @@ import com.gestor_empresarial.event_service.mappers.EventMapper;
 import com.gestor_empresarial.event_service.models.Event;
 import com.gestor_empresarial.event_service.repositories.IEventRepository;
 
-import jakarta.transaction.Transactional;
 
 @Service
 public class EventService {

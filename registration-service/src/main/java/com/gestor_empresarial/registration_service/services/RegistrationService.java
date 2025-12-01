@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.gestor_empresarial.registration_service.clients.IEventFeignClient;
 import com.gestor_empresarial.registration_service.dtos.RegistrationRequestDto;
@@ -12,13 +13,12 @@ import com.gestor_empresarial.registration_service.dtos.RegistrationResponseDto;
 import com.gestor_empresarial.registration_service.dtos.UpdateRegistrationStatusDto;
 import com.gestor_empresarial.registration_service.enums.RegistrationStatus;
 import com.gestor_empresarial.registration_service.exceptions.AlreadyRegisteredException;
-import com.gestor_empresarial.registration_service.exceptions.EventNotAvailableException;
 import com.gestor_empresarial.registration_service.exceptions.RegistrationNotFoundException;
 import com.gestor_empresarial.registration_service.mappers.RegistrationMapper;
 import com.gestor_empresarial.registration_service.models.RegistrationModel;
 import com.gestor_empresarial.registration_service.repositories.IRegistrationRepository;
 
-import jakarta.transaction.Transactional;
+
 
 @Service
 public class RegistrationService {
@@ -27,7 +27,7 @@ public class RegistrationService {
     private IRegistrationRepository repository;
 
     @Autowired
-    IEventFeignClient eventClient;
+    private IEventFeignClient eventClient;
 
     @Transactional
     public RegistrationResponseDto createRegistration(RegistrationRequestDto request, Long userId) {

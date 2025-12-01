@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/api/events")
@@ -74,13 +73,13 @@ public class EventController {
         return ResponseEntity.ok(service.updateEventStatus(id, userId, request));
     }
 
-    @PostMapping("/api/events/register/{id}")
+    @PostMapping("/register/{id}")
     public ResponseEntity<Void> reserveCapacityAndRegister(@PathVariable Long id) {
         service.reserveCapacity(id);
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/api/events/release/{id}")
+    @PostMapping("/release/{id}")
     public ResponseEntity<Void> releaseCapacity(@PathVariable Long id) {
         service.releaseCapacity(id);
         return ResponseEntity.noContent().build();
