@@ -11,9 +11,13 @@ import com.gestor_empresarial.event_service.dtos.EventResponseDto;
 import com.gestor_empresarial.event_service.dtos.EventStatusUpdateDTO;
 import com.gestor_empresarial.event_service.dtos.EventUpdateRequestDto;
 import com.gestor_empresarial.event_service.enums.Status;
+import com.gestor_empresarial.event_service.exceptions.EventNotAvailableException;
+import com.gestor_empresarial.event_service.exceptions.EventNotFoundException;
 import com.gestor_empresarial.event_service.mappers.EventMapper;
 import com.gestor_empresarial.event_service.models.Event;
 import com.gestor_empresarial.event_service.repositories.IEventRepository;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class EventService {
@@ -24,6 +28,7 @@ public class EventService {
     @Autowired
     private EventMapper mapper;
 
+    @Transactional
     public EventResponseDto createEvent(EventRequestDto request, Long id) {
         Event event = mapper.toEntity(request);
         event.setOrganizerId(id);
@@ -43,9 +48,11 @@ public class EventService {
         return responseDtos;
     }
 
+    @Transactional
     public void deleteEvent(Long id, Long userId) {
         Event event = repository.findByIdAndOrganizerId(id, userId)
-                .orElseThrow(() -> new RuntimeException("El evento con id: " + id + " no existe o no se encuentra"));
+                .orElseThrow(
+                        () -> new EventNotFoundException("El evento con id: " + id + " no existe o no se encuentra"));
 
         if (userId != event.getOrganizerId()) {
             throw new RuntimeException("El id del organizador y del usuario logeado no coinciden");
@@ -54,9 +61,11 @@ public class EventService {
         repository.delete(event);
     }
 
+    @Transactional
     public EventResponseDto updateEvent(Long id, Long userId, EventUpdateRequestDto request) {
         Event event = repository.findByIdAndOrganizerId(id, userId)
-                .orElseThrow(() -> new RuntimeException("El evento con id: " + id + " no existe o no se encuentra"));
+                .orElseThrow(
+                        () -> new EventNotFoundException("El evento con id: " + id + " no existe o no se encuentra"));
 
         if (userId != event.getOrganizerId()) {
             throw new RuntimeException("El id del organizador y del usuario logeado no coinciden");
@@ -87,7 +96,8 @@ public class EventService {
 
     public EventResponseDto findPublishedEventById(Long id) {
         Event event = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("No se ha encontrado el evento con id: " + id));
+                .orElseThrow(
+                        () -> new EventNotFoundException("El evento con id: " + id + " no existe o no se encuentra"));
 
         if (!event.isPublished() || event.getStatus() != Status.ACTIVE) {
             throw new RuntimeException("El evento con id: " + id + " no esta disponible");
@@ -106,9 +116,11 @@ public class EventService {
         return responseDtos;
     }
 
+    @Transactional
     public EventResponseDto updateEventStatus(Long id, Long userId, EventStatusUpdateDTO request) {
         Event event = repository.findByIdAndOrganizerId(id, userId)
-                .orElseThrow(() -> new RuntimeException("El evento con id: " + id + " no existe o no se encuentra"));
+                .orElseThrow(
+                        () -> new EventNotFoundException("El evento con id: " + id + " no existe o no se encuentra"));
 
         if (userId != event.getOrganizerId()) {
             throw new RuntimeException("El id del organizador y del usuario logeado no coinciden");
@@ -123,4 +135,41 @@ public class EventService {
         Event eventUpdated = repository.save(event);
         return mapper.toResponseDto(eventUpdated);
     }
+
+    @Transactional
+    public void reserveCapacity(Long eventId) {
+        Event event = repository.findById(eventId)
+                .orElseThrow(() -> new EventNotFoundException("No se ha encontrado el evento con id: " + eventId));
+
+        if (event.getStatus() != Status.ACTIVE) {
+            throw new EventNotAvailableException(
+                    "El evento con id: " + eventId + " no esta activo para nuevos registros");
+        }
+
+        if (event.getNumRegistered() >= event.getCapacity()) {
+            throw new EventNotAvailableException("El evento con id: " + eventId + " esta ya completo");
+        }
+
+        event.setNumRegistered(event.getNumRegistered() + 1);
+        repository.save(event);
+    }
+
+    @Transactional
+    public void releaseCapacity(Long eventId) {
+        Event event = repository.findById(eventId)
+                .orElseThrow(() -> new EventNotFoundException("No se ha encontrado el evento con id: " + eventId));
+
+        if (event.getStatus() != Status.ACTIVE) {
+            throw new EventNotAvailableException(
+                    "El evento con id: " + eventId + " no esta activo para nuevos registros");
+        }
+
+        if (event.getNumRegistered() <= 0) {
+            throw new EventNotAvailableException("El evento con id: " + eventId + " no puede tener menos de 0 participantes");
+        }
+
+        event.setNumRegistered(event.getNumRegistered() - 1);
+        repository.save(event);
+    }
+
 }

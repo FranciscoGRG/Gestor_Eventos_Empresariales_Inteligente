@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/api/events")
@@ -45,29 +45,44 @@ public class EventController {
     }
 
     @GetMapping("/mine")
-    public ResponseEntity<List<EventResponseDto>> getCreatedEventsByLoggedUser(@RequestHeader("X-User-ID") Long userId) {
+    public ResponseEntity<List<EventResponseDto>> getCreatedEventsByLoggedUser(
+            @RequestHeader("X-User-ID") Long userId) {
         return ResponseEntity.ok(service.getAllEventsByOrganizerId(userId));
     }
 
     @PostMapping()
-    public ResponseEntity<EventResponseDto> createEvent(@RequestBody EventRequestDto request, @RequestHeader("X-User-ID") Long userId) {      
+    public ResponseEntity<EventResponseDto> createEvent(@RequestBody EventRequestDto request,
+            @RequestHeader("X-User-ID") Long userId) {
         return ResponseEntity.ok(service.createEvent(request, userId));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<EventResponseDto> updateEvent(@PathVariable long id , @RequestBody EventUpdateRequestDto request, @RequestHeader("X-User-ID") Long userId) {
+    public ResponseEntity<EventResponseDto> updateEvent(@PathVariable long id,
+            @RequestBody EventUpdateRequestDto request, @RequestHeader("X-User-ID") Long userId) {
         return ResponseEntity.ok(service.updateEvent(id, userId, request));
     }
-    
+
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteEvent(@PathVariable Long id, @RequestHeader("X-User-ID") Long userId){
+    public ResponseEntity<Void> deleteEvent(@PathVariable Long id, @RequestHeader("X-User-ID") Long userId) {
         service.deleteEvent(id, userId);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}/status")
-    public ResponseEntity<EventResponseDto> updateEventStatus(@PathVariable Long id, @RequestHeader("X-User-ID") Long userId, @RequestBody EventStatusUpdateDTO request) {
+    public ResponseEntity<EventResponseDto> updateEventStatus(@PathVariable Long id,
+            @RequestHeader("X-User-ID") Long userId, @RequestBody EventStatusUpdateDTO request) {
         return ResponseEntity.ok(service.updateEventStatus(id, userId, request));
     }
-    
+
+    @PostMapping("/api/events/register/{id}")
+    public ResponseEntity<Void> reserveCapacityAndRegister(@PathVariable Long id) {
+        service.reserveCapacity(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/api/events/release/{id}")
+    public ResponseEntity<Void> releaseCapacity(@PathVariable Long id) {
+        service.releaseCapacity(id);
+        return ResponseEntity.noContent().build();
+    }
 }
