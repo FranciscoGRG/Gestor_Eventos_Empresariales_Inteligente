@@ -8,17 +8,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.gestor_empresarial.registration_service.clients.IEventFeignClient;
+import com.gestor_empresarial.registration_service.clients.INotificationFeignClient;
+import com.gestor_empresarial.registration_service.clients.IUserFeignClient;
+import com.gestor_empresarial.registration_service.dtos.EventDto;
+import com.gestor_empresarial.registration_service.dtos.RegistrationNotificationDto;
 import com.gestor_empresarial.registration_service.dtos.RegistrationRequestDto;
 import com.gestor_empresarial.registration_service.dtos.RegistrationResponseDto;
 import com.gestor_empresarial.registration_service.dtos.UpdateRegistrationStatusDto;
+import com.gestor_empresarial.registration_service.dtos.UserDto;
 import com.gestor_empresarial.registration_service.enums.RegistrationStatus;
 import com.gestor_empresarial.registration_service.exceptions.AlreadyRegisteredException;
 import com.gestor_empresarial.registration_service.exceptions.RegistrationNotFoundException;
 import com.gestor_empresarial.registration_service.mappers.RegistrationMapper;
 import com.gestor_empresarial.registration_service.models.RegistrationModel;
 import com.gestor_empresarial.registration_service.repositories.IRegistrationRepository;
-
-
 
 @Service
 public class RegistrationService {
@@ -29,6 +32,12 @@ public class RegistrationService {
     @Autowired
     private IEventFeignClient eventClient;
 
+    @Autowired
+    private IUserFeignClient userClient;
+
+    @Autowired
+    private INotificationFeignClient notificationClient;
+
     @Transactional
     public RegistrationResponseDto createRegistration(RegistrationRequestDto request, Long userId) {
         if (repository.existsByEventIdAndUserId(request.eventId(), userId)) {
@@ -37,7 +46,7 @@ public class RegistrationService {
         }
 
         try {
-            eventClient.reserveCapacityAndRegister(request.eventId());
+            eventClient.reserveCapacityAndRegister(request.eventId(), userId);
         } catch (Exception e) {
             throw new RuntimeException("Fallo en la reserva de capacidad del event service: " + e.getMessage(), e);
         }
@@ -48,6 +57,12 @@ public class RegistrationService {
         registration.setStatus(RegistrationStatus.PENDING_PAYMENT);
 
         RegistrationModel savedRegistration = repository.save(registration);
+
+        UserDto user = userClient.getUserNameAndEmail(userId).getBody();
+        EventDto event = eventClient.getEventById(userId).getBody();
+
+        RegistrationNotificationDto notificationDto = new RegistrationNotificationDto(user.userEmail(), user.userName(), event.title(), event.startDate(), event.location());
+        notificationClient.sendInscriptionNotification(notificationDto);
 
         return RegistrationMapper.toResponseDto(savedRegistration);
     }
@@ -93,7 +108,7 @@ public class RegistrationService {
                         "No se ha encontrado el registro con userId: " + userId + " y eventId: " + eventId));
 
         try {
-            eventClient.releaseCapacity(eventId);
+            eventClient.releaseCapacity(eventId, userId);
         } catch (Exception e) {
             throw new RuntimeException("Fallo al reducir la cantidad de registros en event service: " + e.getMessage(),
                     e);

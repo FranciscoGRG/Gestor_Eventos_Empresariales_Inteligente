@@ -18,8 +18,11 @@ import com.gestor_empresarial.auth_server.dtos.AuthResponseDto;
 import com.gestor_empresarial.auth_server.dtos.LoginRequestDto;
 import com.gestor_empresarial.auth_server.dtos.RegisterRequestDto;
 import com.gestor_empresarial.auth_server.dtos.UserDto;
+import com.gestor_empresarial.auth_server.dtos.UserNotificationDto;
 import com.gestor_empresarial.auth_server.models.User;
 import com.gestor_empresarial.auth_server.services.AuthService;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @RequestMapping("api/auth")
@@ -58,33 +61,14 @@ public class AuthController {
         }
     }
 
-    // @PutMapping("/updateProfile")
-    // public ResponseEntity<User> updateUser(@AuthenticationPrincipal UserDetails userDetails,
-    //         @RequestBody UpdateUserDTO updatedUser) {
-    //     String userEmail = userDetails.getUsername();
-    //     Optional<Long> userIdOptional = authService.findIdByEmail(userEmail);
-
-    //     if (userIdOptional.isEmpty()) {
-    //         return ResponseEntity.notFound().build();
-    //     }
-
-    //     Long userId = userIdOptional.get();
-
-    //     try {
-    //         return ResponseEntity.ok(authService.updateUserProfile(userId, updatedUser));
-    //     }
-
-    //     catch (RuntimeException e) {
-    //         System.err.println("Error de lógica de negocio: " + e.getMessage());
-    //         return ResponseEntity.badRequest().build();
-    //     } catch (Exception e) {
-    //         System.err.println("Error interno del servidor: " + e.getMessage());
-    //         return ResponseEntity.internalServerError().build();
-    //     }
-    // }
-
     @GetMapping("/findAll")
     public ResponseEntity<List<User>> findAll() {
         return ResponseEntity.ok(authService.findAll());
     }
+
+    @GetMapping("/getUserEmailAndName/{id}")
+    public ResponseEntity<UserNotificationDto> getUserEmailAndName(@PathVariable Long id) {
+        return ResponseEntity.ok(authService.getUserNameAndEmail(id));
+    }
+    
 }

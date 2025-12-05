@@ -56,14 +56,14 @@ class RegistrationServiceTest {
     @Test
     void createRegistration_ShouldReturnResponse_WhenNotRegistered() {
         when(repository.existsByEventIdAndUserId(1L, 1L)).thenReturn(false);
-        when(eventClient.reserveCapacityAndRegister(1L)).thenReturn(ResponseEntity.noContent().build());
+        when(eventClient.reserveCapacityAndRegister(1L, 1L)).thenReturn(ResponseEntity.noContent().build());
         when(repository.save(any(RegistrationModel.class))).thenReturn(registration);
 
         RegistrationResponseDto response = registrationService.createRegistration(registrationRequest, 1L);
 
         assertNotNull(response);
         assertEquals(1L, response.eventId());
-        verify(eventClient).reserveCapacityAndRegister(1L);
+        verify(eventClient).reserveCapacityAndRegister(1L, 1L);
         verify(repository).save(any(RegistrationModel.class));
     }
 
@@ -73,7 +73,7 @@ class RegistrationServiceTest {
 
         assertThrows(AlreadyRegisteredException.class,
                 () -> registrationService.createRegistration(registrationRequest, 1L));
-        verify(eventClient, never()).reserveCapacityAndRegister(anyLong());
+        verify(eventClient, never()).reserveCapacityAndRegister(anyLong(), anyLong());
     }
 
     @Test
@@ -109,11 +109,11 @@ class RegistrationServiceTest {
     @Test
     void deleteRegistration_ShouldDelete_WhenExists() {
         when(repository.findByEventIdAndUserId(1L, 1L)).thenReturn(Optional.of(registration));
-        when(eventClient.releaseCapacity(1L)).thenReturn(ResponseEntity.noContent().build());
+        when(eventClient.releaseCapacity(1L, 1L)).thenReturn(ResponseEntity.noContent().build());
 
         registrationService.deleteRegistration(1L, 1L);
 
-        verify(eventClient).releaseCapacity(1L);
+        verify(eventClient).releaseCapacity(1L, 1L);
         verify(repository).delete(registration);
     }
 

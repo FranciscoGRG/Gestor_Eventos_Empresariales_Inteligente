@@ -9,10 +9,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.gestor_empresarial.auth_server.clients.INotificationFeignClient;
 import com.gestor_empresarial.auth_server.dtos.AuthResponseDto;
 import com.gestor_empresarial.auth_server.dtos.LoginRequestDto;
 import com.gestor_empresarial.auth_server.dtos.RegisterRequestDto;
 import com.gestor_empresarial.auth_server.dtos.UserDto;
+import com.gestor_empresarial.auth_server.dtos.UserNotificationDto;
 import com.gestor_empresarial.auth_server.enums.Role;
 import com.gestor_empresarial.auth_server.models.User;
 import com.gestor_empresarial.auth_server.repositories.IUserRepository;
@@ -25,6 +27,9 @@ public class AuthService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private INotificationFeignClient notificationFeignClient;
 
     @Autowired
     private JwtService jwtService;
@@ -48,6 +53,8 @@ public class AuthService {
         User userSaved = repository.save(user);
 
         String token = jwtService.generateToken(userSaved.getId(), userSaved.getEmail(), userSaved.getRoles());
+        
+        notificationFeignClient.sendRegistrationNotification(new UserNotificationDto(userSaved.getFirstName(), userSaved.getEmail()));
         return new AuthResponseDto(token, userSaved.getEmail(), userSaved.getRoles()); 
     }
 
@@ -76,6 +83,17 @@ public class AuthService {
     public void deleteUser(Long id) {
         User user = repository.findById(id).orElseThrow(() -> new RuntimeException("El user no existe"));
         repository.delete(user);
+    }
+
+    public UserNotificationDto getUserNameAndEmail(Long id) {
+        User user = repository.findById(id).orElseThrow(() -> new RuntimeException("El user no existe"));
+
+        UserNotificationDto userNotification = new UserNotificationDto(
+            user.getFirstName(),
+            user.getEmail()
+        );
+
+        return userNotification;
     }
 
     // public User updatedUser(Long id, User updatedUser) {

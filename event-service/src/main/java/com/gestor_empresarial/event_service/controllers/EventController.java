@@ -74,14 +74,15 @@ public class EventController {
     }
 
     @PostMapping("/register/{id}")
-    public ResponseEntity<Void> reserveCapacityAndRegister(@PathVariable Long id) {
+    public ResponseEntity<Void> reserveCapacityAndRegister(@PathVariable Long id, @RequestHeader("X-User-ID") Long userId) {
         service.reserveCapacity(id);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/release/{id}")
-    public ResponseEntity<Void> releaseCapacity(@PathVariable Long id) {
+    public ResponseEntity<Void> releaseCapacity(@PathVariable Long id, @RequestHeader("X-User-ID") Long userId) {
         service.releaseCapacity(id);
         return ResponseEntity.noContent().build();
     }
+    
 }
