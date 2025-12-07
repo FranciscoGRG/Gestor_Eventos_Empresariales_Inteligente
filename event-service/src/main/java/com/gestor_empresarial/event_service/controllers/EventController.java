@@ -33,6 +33,11 @@ public class EventController {
         return ResponseEntity.ok(service.findPublishedEventsByTitle(name));
     }
 
+    @GetMapping("")
+    public ResponseEntity<List<EventResponseDto>> findAll() {
+        return ResponseEntity.ok(service.findAllEvents());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<EventResponseDto> getPublishedEventById(@PathVariable Long id) {
         return ResponseEntity.ok(service.findPublishedEventById(id));
@@ -74,7 +79,8 @@ public class EventController {
     }
 
     @PostMapping("/register/{id}")
-    public ResponseEntity<Void> reserveCapacityAndRegister(@PathVariable Long id, @RequestHeader("X-User-ID") Long userId) {
+    public ResponseEntity<Void> reserveCapacityAndRegister(@PathVariable Long id,
+            @RequestHeader("X-User-ID") Long userId) {
         service.reserveCapacity(id);
         return ResponseEntity.noContent().build();
     }
@@ -84,5 +90,5 @@ public class EventController {
         service.releaseCapacity(id);
         return ResponseEntity.noContent().build();
     }
-    
+
 }

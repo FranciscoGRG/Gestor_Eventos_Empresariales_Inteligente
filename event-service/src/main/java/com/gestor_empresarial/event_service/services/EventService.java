@@ -18,7 +18,6 @@ import com.gestor_empresarial.event_service.mappers.EventMapper;
 import com.gestor_empresarial.event_service.models.Event;
 import com.gestor_empresarial.event_service.repositories.IEventRepository;
 
-
 @Service
 public class EventService {
 
@@ -40,6 +39,16 @@ public class EventService {
 
     public List<EventResponseDto> getAllEventsByOrganizerId(Long organizerId) {
         List<Event> events = repository.findByOrganizerId(organizerId);
+
+        List<EventResponseDto> responseDtos = events.stream()
+                .map(mapper::toResponseDto)
+                .collect(Collectors.toList());
+
+        return responseDtos;
+    }
+
+    public List<EventResponseDto> findAllEvents() {
+        List<Event> events = repository.findAll();
 
         List<EventResponseDto> responseDtos = events.stream()
                 .map(mapper::toResponseDto)
@@ -165,7 +174,8 @@ public class EventService {
         }
 
         if (event.getNumRegistered() <= 0) {
-            throw new EventNotAvailableException("El evento con id: " + eventId + " no puede tener menos de 0 participantes");
+            throw new EventNotAvailableException(
+                    "El evento con id: " + eventId + " no puede tener menos de 0 participantes");
         }
 
         event.setNumRegistered(event.getNumRegistered() - 1);
