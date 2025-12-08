@@ -56,7 +56,7 @@ export class EventService {
     return this.http.get<EventModel[]>(`${this.apiUrl}/organizer/${organizerId}`)
   }
 
-  getAllEvents(): Observable<EventModel[]> {
+  getAllPublishedAndActiveEvents(): Observable<EventModel[]> {
     return this.http.get<EventModel[]>(`${this.apiUrl}`)
   }
 

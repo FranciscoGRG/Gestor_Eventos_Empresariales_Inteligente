@@ -8,6 +8,10 @@ import { EventService } from '../../services/event-service';
   templateUrl: './event-component.html',
 })
 export class EventComponent implements OnInit{
+
+  // HACER COMPROBACION DE SI EL USUARIO ESTA INSCRITO, DESHABILITAR EL BOTON DE INSCRIBIRSE
+
+
   
   private eventService = inject(EventService);
   events = signal<EventModel[]>([]);
@@ -20,7 +24,7 @@ export class EventComponent implements OnInit{
 
 
   loadEvents(): void {
-    this.eventService.getAllEvents().subscribe({
+    this.eventService.getAllPublishedAndActiveEvents().subscribe({
       next: (events) => {
         this.events.set(events);
         this.loading.set(false);
@@ -31,6 +35,10 @@ export class EventComponent implements OnInit{
         console.error("Error al cargar los eventos: ", error);
       }
     })
+  }
+
+  registration(): void {
+    
   }
 
 }

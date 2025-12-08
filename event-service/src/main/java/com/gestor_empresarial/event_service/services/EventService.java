@@ -47,8 +47,8 @@ public class EventService {
         return responseDtos;
     }
 
-    public List<EventResponseDto> findAllEvents() {
-        List<Event> events = repository.findAll();
+    public List<EventResponseDto> findAllPublishedAndActiveEvents() {
+        List<Event> events = repository.findByStatusAndIsPublishedTrue(Status.ACTIVE);
 
         List<EventResponseDto> responseDtos = events.stream()
                 .map(mapper::toResponseDto)

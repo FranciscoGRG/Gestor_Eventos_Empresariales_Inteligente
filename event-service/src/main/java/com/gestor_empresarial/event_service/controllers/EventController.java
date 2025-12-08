@@ -34,8 +34,8 @@ public class EventController {
     }
 
     @GetMapping("")
-    public ResponseEntity<List<EventResponseDto>> findAll() {
-        return ResponseEntity.ok(service.findAllEvents());
+    public ResponseEntity<List<EventResponseDto>> findAllPublishedAndActiveEvents() {
+        return ResponseEntity.ok(service.findAllPublishedAndActiveEvents());
     }
 
     @GetMapping("/{id}")
