@@ -19,7 +19,11 @@
                     <h2 class="text-lg font-semibold">{{ event.title }}</h2>
                     <p class="text-sm text-slate-500">{{ event.location }}</p>
                     <p class="text-sm text-slate-500">{{ event.startDate }}</p>
-                    <button class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded mt-4 block mx-auto">Inscribirse</button>
+                    @if (isUserRegistered(event.id)) {
+                    <button class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded mt-4 block mx-auto">Ya estas inscrito</button>
+                    } @else {
+                    <button (click)="registration(event.id)" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded mt-4 block mx-auto">Inscribirse</button>
+                    }
                 </div>
             </div>
             }
