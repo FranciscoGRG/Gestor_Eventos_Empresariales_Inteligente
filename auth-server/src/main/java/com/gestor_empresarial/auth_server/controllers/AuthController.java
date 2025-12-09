@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,6 +21,7 @@ import com.gestor_empresarial.auth_server.dtos.LoginRequestDto;
 import com.gestor_empresarial.auth_server.dtos.RegisterRequestDto;
 import com.gestor_empresarial.auth_server.dtos.UserDto;
 import com.gestor_empresarial.auth_server.dtos.UserNotificationDto;
+import com.gestor_empresarial.auth_server.dtos.UserRoleUpdateDto;
 import com.gestor_empresarial.auth_server.models.User;
 import com.gestor_empresarial.auth_server.services.AuthService;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -71,4 +73,11 @@ public class AuthController {
     public ResponseEntity<UserNotificationDto> getUserEmailAndName(@PathVariable Long id) {
         return ResponseEntity.ok(authService.getUserNameAndEmail(id));
     }
+
+    @PutMapping("/updateRole")
+    public ResponseEntity<Void> updateUserRole(@RequestHeader("X-User-ID") Long userId, @RequestBody UserRoleUpdateDto newRole) {
+        authService.updatedUserRole(userId, newRole);
+        return ResponseEntity.noContent().build();
+    }
+    
 }

@@ -10,10 +10,6 @@ import { RegistrationModel } from '../../models/registration-model';
   templateUrl: './event-component.html',
 })
 export class EventComponent implements OnInit{
-
-  // HACER COMPROBACION DE SI EL USUARIO ESTA INSCRITO, DESHABILITAR EL BOTON DE INSCRIBIRSE
-
-
   
   private eventService = inject(EventService);
   private registrationService = inject(RegistrationService);

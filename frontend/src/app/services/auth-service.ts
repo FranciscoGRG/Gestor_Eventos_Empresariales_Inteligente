@@ -89,4 +89,20 @@ export class AuthService {
     this.loggedInUser.set(null);
     this.router.navigate(['/login']);
   }
+
+  askForAdministrator() {
+    this.http.put(`${this.apiUrl}/updateRole`, { newRole: "ROLE_ORGANIZER" }, {
+      headers: {
+        Authorization: `Bearer ${this.getToken()}`,
+      },
+    }).subscribe({
+      next: () => {
+        console.log("Solicitud enviada correctamente");
+        this.router.navigate(['/login']);
+      },
+      error: (error) => {
+        console.error("Error al solicitar ser administrador: ", error)
+      }
+    });
+  }
 }

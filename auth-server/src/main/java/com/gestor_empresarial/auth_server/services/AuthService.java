@@ -15,6 +15,7 @@ import com.gestor_empresarial.auth_server.dtos.LoginRequestDto;
 import com.gestor_empresarial.auth_server.dtos.RegisterRequestDto;
 import com.gestor_empresarial.auth_server.dtos.UserDto;
 import com.gestor_empresarial.auth_server.dtos.UserNotificationDto;
+import com.gestor_empresarial.auth_server.dtos.UserRoleUpdateDto;
 import com.gestor_empresarial.auth_server.enums.Role;
 import com.gestor_empresarial.auth_server.models.User;
 import com.gestor_empresarial.auth_server.repositories.IUserRepository;
@@ -53,9 +54,10 @@ public class AuthService {
         User userSaved = repository.save(user);
 
         String token = jwtService.generateToken(userSaved.getId(), userSaved.getEmail(), userSaved.getRoles());
-        
-        notificationFeignClient.sendRegistrationNotification(new UserNotificationDto(userSaved.getFirstName(), userSaved.getEmail()));
-        return new AuthResponseDto(token, userSaved.getEmail(), userSaved.getRoles()); 
+
+        notificationFeignClient
+                .sendRegistrationNotification(new UserNotificationDto(userSaved.getFirstName(), userSaved.getEmail()));
+        return new AuthResponseDto(token, userSaved.getEmail(), userSaved.getRoles());
     }
 
     public AuthResponseDto login(LoginRequestDto request) {
@@ -89,63 +91,48 @@ public class AuthService {
         User user = repository.findById(id).orElseThrow(() -> new RuntimeException("El user no existe"));
 
         UserNotificationDto userNotification = new UserNotificationDto(
-            user.getFirstName(),
-            user.getEmail()
-        );
+                user.getFirstName(),
+                user.getEmail());
 
         return userNotification;
     }
 
-    // public User updatedUser(Long id, User updatedUser) {
-    //     User existingUser = repository.findById(id).orElseThrow(() -> new RuntimeException("El user no existe"));
+    public void updatedUserRole(Long id, UserRoleUpdateDto updatedUser) {
+        User existingUser = repository.findById(id).orElseThrow(() -> new RuntimeException("El user no existe"));
 
-    //     existingUser.setName(updatedUser.getName());
-    //     existingUser.setEmail(updatedUser.getEmail());
-    //     existingUser.setPhone(updatedUser.getPhone());
-    //     existingUser.setRol(updatedUser.getRol());
-    //     existingUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
+        Role newRole;
 
-    //     return repository.save(existingUser);
-    // }
+        try {
+            newRole = Role.valueOf(updatedUser.newRole());
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("El rol especificado no es válido");
+        }
 
-    // public User updateUserProfile(Long userIdFromToken, UpdateUserDTO updateDto) {
-    //     User existingUser = repository.findById(userIdFromToken)
-    //             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        existingUser.getRoles().add(newRole);
 
-    //     if (updateDto.getName() != null && !updateDto.getName().isBlank()) {
-    //         existingUser.setName(updateDto.getName());
-    //     }
-
-    //     if (updateDto.getNewPassword() != null && !updateDto.getNewPassword().isBlank()) {
-    //         if (updateDto.getCurrentPassword() == null
-    //                 || !passwordEncoder.matches(updateDto.getCurrentPassword(), existingUser.getPassword())) {
-    //             throw new RuntimeException("La contraseña actual es incorrecta o esta vacia");
-    //         }
-
-    //         existingUser.setPassword(passwordEncoder.encode(updateDto.getNewPassword()));
-    //     }
-
-    //     return repository.save(existingUser);
-    // }
+        repository.save(existingUser);
+    }
 
     public Optional<Long> findIdByEmail(String email) {
         return repository.findIdByEmail(email);
     }
 
     private UserDto mapUserToDto(User user) {
-    // Asegúrate de que tu UserDto acepta los campos que estás enviando (id, name, email, roles(Set<String>))
-    
-    // 1. Convertir Set<Role> a Set<String>
-    Set<String> roleNames = user.getRoles().stream()
-        .map(role -> role.name())
-        .collect(Collectors.toSet()); // Necesitas importar java.util.stream.Collectors
+        // Asegúrate de que tu UserDto acepta los campos que estás enviando (id, name,
+        // email, roles(Set<String>))
 
-    return new UserDto(
-        user.getId(), // Asumiendo que UserDto tiene Long id
-        user.getFirstName(),
-        user.getLastName(),
-        user.getEmail(),
-        roleNames // El campo Set<String>
-    ); 
-}
+        // 1. Convertir Set<Role> a Set<String>
+        Set<String> roleNames = user.getRoles().stream()
+                .map(role -> role.name())
+                .collect(Collectors.toSet()); // Necesitas importar java.util.stream.Collectors
+
+        return new UserDto(
+                user.getId(), // Asumiendo que UserDto tiene Long id
+                user.getFirstName(),
+                user.getLastName(),
+                user.getEmail(),
+                roleNames // El campo Set<String>
+        );
+    }
+
 }
