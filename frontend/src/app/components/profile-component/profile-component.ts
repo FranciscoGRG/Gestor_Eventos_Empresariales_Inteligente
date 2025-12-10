@@ -21,6 +21,9 @@ export class ProfileComponent implements OnInit {
   eventForm!: FormGroup;
   errorMessage: string | null = null;
 
+  isEditing = signal(false);
+  eventUpdateId: number | null = null;
+
   private eventService = inject(EventService);
   private authService = inject(AuthService)
   private registrationService = inject(RegistrationService);
@@ -35,6 +38,7 @@ export class ProfileComponent implements OnInit {
 
   createEventForm() {
     this.eventForm = this.fb.group({
+      id: [null],
       title: ['', Validators.required],
       description: ['', Validators.required],
       location: ['', Validators.required],
@@ -47,17 +51,11 @@ export class ProfileComponent implements OnInit {
 
   onSubmit(): void {
     if (this.eventForm.valid) {
-      const event: EventRequestModel = this.eventForm.value;
-      this.eventService.createEvent(event).subscribe({
-        next: (event) => {
-          this.events.set([...this.events(), event]);
-          this.eventForm.reset();
-        },
-        error: (error) => {
-          console.error("Error al crear el evento: ", error)
-          this.errorMessage = "Error al crear el evento";
-        }
-      });
+      if (this.isEditing() && this.eventUpdateId != null) {
+        this.updateEvent(this.eventUpdateId, this.eventForm.value)
+      } else {
+        this.creatEvent(this.eventForm.value)
+      }
     }
   }
 
@@ -101,7 +99,7 @@ export class ProfileComponent implements OnInit {
       }
     });
   }
-  
+
   onUpdateEventStatus(newStatus: string, eventId: number): void {
     this.eventService.updateEventStatus(newStatus, eventId).subscribe({
       next: () => {
@@ -120,5 +118,44 @@ export class ProfileComponent implements OnInit {
 
   isOrganizer(): boolean {
     return this.authService.isOrganizer();
+  }
+
+  onEditEvent(event: EventModel): void {
+    this.isEditing.set(true);
+    this.eventUpdateId = event.id;
+    this.eventForm.patchValue(event);
+  }
+
+  onCancelEdit(): void {
+    this.isEditing.set(false);
+    this.eventForm.reset();
+    this.eventUpdateId = null;
+  }
+
+  updateEvent(eventId: number, eventRequest: EventRequestModel): void {
+      this.eventService.updateEvent(eventId, eventRequest).subscribe({
+        next: (updatedEvent) => {
+          this.events.update(events => events.map(e => e.id === eventId ? updatedEvent : e));
+
+          this.onCancelEdit();
+        },
+        error: (error) => {
+          console.error("Error al actualizar el evento: ", error)
+          this.errorMessage = "Error al actualizar el evento";
+        }
+      });
+  }
+
+  creatEvent(eventData: EventRequestModel): void {
+      this.eventService.createEvent(eventData).subscribe({
+        next: (event) => {
+          this.events.set([event, ...this.events()]);
+          this.eventForm.reset();
+        },
+        error: (error) => {
+          console.error("Error al crear el evento: ", error)
+          this.errorMessage = "Error al crear el evento";
+        }
+      });
   }
 }
