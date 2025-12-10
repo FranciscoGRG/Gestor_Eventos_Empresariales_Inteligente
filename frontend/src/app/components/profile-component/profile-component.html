@@ -37,9 +37,14 @@
             </nav>
         </div>
 
-                        <button (click)="onAskForOrganizer()">
-                    Solicitar ser organizador
-                </button>
+        @if (!isOrganizer()) {
+        <div class="flex justify-center mt-6">
+            <button (click)="onAskForOrganizer()"
+                class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200">
+                Solicitar ser organizador
+            </button>
+        </div>
+        }
 
         <!-- Content Area -->
         <div class="mt-6">
@@ -152,13 +157,25 @@
                                     </h4>
                                     <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">{{ event.location }}</p>
                                 </div>
-                                <span [class.bg-green-100]="event.isPublished"
-                                    [class.text-green-800]="event.isPublished"
-                                    [class.bg-yellow-100]="!event.isPublished"
-                                    [class.text-yellow-800]="!event.isPublished"
-                                    class="px-2 py-1 text-xs font-semibold rounded-full">
-                                    {{ event.isPublished ? 'Publicado' : 'Borrador' }}
-                                </span>
+                                <div class="relative">
+                                    <select (change)="onUpdateEventStatus($any($event.target).value, event.id)"
+                                        class="appearance-none block w-full px-3 py-1 pr-8 text-xs font-semibold rounded-full border-none focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+                                        [class.bg-green-100]="event.isPublished"
+                                        [class.text-green-800]="event.isPublished"
+                                        [class.bg-yellow-100]="!event.isPublished"
+                                        [class.text-yellow-800]="!event.isPublished"
+                                        [value]="event.isPublished ? 'Publicado' : 'Borrador'">
+                                        <option value="Borrador" class="bg-white text-gray-900">Borrador</option>
+                                        <option value="Publicado" class="bg-white text-gray-900">Publicado</option>
+                                    </select>
+                                    <div
+                                        class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </div>
+                                </div>
                             </div>
 
                             <p class="text-gray-600 dark:text-gray-300 mt-3 line-clamp-2">
@@ -176,10 +193,12 @@
                                     <span class="font-medium">Inscritos:</span> {{ event.numRegistered }} / {{
                                     event.capacity }}
                                 </div>
+                                @if (!event.isPublished) {
                                 <div>
                                     <button class="rounded-full bg-red-500 px-4 py-2 text-white"
                                         (click)="onDeleteEvent(event.id)">Eliminar Evento</button>
                                 </div>
+                                }
                             </div>
                         </div>
                     </div>

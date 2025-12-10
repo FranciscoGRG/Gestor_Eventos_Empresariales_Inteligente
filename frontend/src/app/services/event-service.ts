@@ -70,10 +70,11 @@ export class EventService {
     });
   }
 
-  updateEventStatus(newStatus: string, eventId: number): Observable<EventModel> {
+  updateEventStatus(statusDisplay: string, eventId: number): Observable<EventModel> {
     const token = localStorage.getItem(this.TOKEN_KEY);
+    const apiStatus = statusDisplay === 'Publicado' ? 'ACTIVE' : 'DRAFT';
 
-    return this.http.put<EventModel>(`${this.apiUrl}/${eventId}/status`, { status: newStatus }, {
+    return this.http.put<EventModel>(`${this.apiUrl}/${eventId}/status`, { newStatus: apiStatus }, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

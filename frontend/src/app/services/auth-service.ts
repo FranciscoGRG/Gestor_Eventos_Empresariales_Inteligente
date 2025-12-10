@@ -45,7 +45,7 @@ export class AuthService {
 
         const userData: CurrentUserDataModel = {
           email: response.email,
-          role: response.role,
+          roles: response.roles,
         };
         this.setUserData(userData);
       })
@@ -59,7 +59,7 @@ export class AuthService {
 
         const userData: CurrentUserDataModel = {
           email: response.email,
-          role: response.role,
+          roles: response.roles,
         };
         this.setUserData(userData);
       })
@@ -104,5 +104,15 @@ export class AuthService {
         console.error("Error al solicitar ser administrador: ", error)
       }
     });
+  }
+
+  isOrganizer(): boolean {
+    const user = this.loggedInUser();
+    return user?.roles?.includes('ROLE_ORGANIZER') || false;
+  }
+
+  hasRole(role: string): boolean {
+    const user = this.loggedInUser();
+    return user?.roles?.includes(`ROLE_${role}`) || false;
   }
 }

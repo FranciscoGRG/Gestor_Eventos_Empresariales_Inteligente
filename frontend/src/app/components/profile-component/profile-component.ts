@@ -117,4 +117,8 @@ export class ProfileComponent implements OnInit {
   onAskForOrganizer(): void {
     this.authService.askForAdministrator();
   }
+
+  isOrganizer(): boolean {
+    return this.authService.isOrganizer();
+  }
 }
