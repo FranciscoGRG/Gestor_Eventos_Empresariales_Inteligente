@@ -1,7 +1,6 @@
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto space-y-8 mt-15">
 
-        <!-- Header -->
         <div class="text-center">
             <h2 class="text-3xl font-extrabold text-gray-900 dark:text-white sm:text-4xl">
                 Mi Perfil
@@ -11,7 +10,6 @@
             </p>
         </div>
 
-        <!-- Tabs Navigation -->
         <div class="border-b border-gray-200 dark:border-gray-700">
             <nav class="-mb-px flex justify-center space-x-8" aria-label="Tabs">
                 <button (click)="actibeTab = 'events'" [class.border-indigo-500]="actibeTab === 'events'"
@@ -46,9 +44,7 @@
         </div>
         }
 
-        <!-- Content Area -->
         <div class="mt-6">
-            <!-- Created Events Tab -->
             @if (actibeTab === 'events') {
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
@@ -147,10 +143,7 @@
                     </div>
                 </div>
                 }
-                <!-- Create Event Form -->
 
-
-                <!-- Events List -->
                 <div class="lg:col-span-2 space-y-6">
                     <h3 class="text-xl font-bold text-gray-900 dark:text-white border-b pb-2 dark:border-gray-700">
                         Mis Eventos Publicados
@@ -177,23 +170,13 @@
                                     <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">{{ event.location }}</p>
                                 </div>
                                 <div class="relative">
-                                    <select (change)="onUpdateEventStatus($any($event.target).value, event.id)"
-                                        class="appearance-none block w-full px-3 py-1 pr-8 text-xs font-semibold rounded-full border-none focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
-                                        [class.bg-green-100]="event.isPublished"
+                                    <p class="rounded-full px-2 py-1 text-xs font-semibold"
+                                        [class.bg-green-200]="event.isPublished"
                                         [class.text-green-800]="event.isPublished"
-                                        [class.bg-yellow-100]="!event.isPublished"
-                                        [class.text-yellow-800]="!event.isPublished"
-                                        [value]="event.isPublished ? 'Publicado' : 'Borrador'">
-                                        <option value="Borrador" class="bg-white text-gray-900">Borrador</option>
-                                        <option value="Publicado" class="bg-white text-gray-900">Publicado</option>
-                                    </select>
-                                    <div
-                                        class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M19 9l-7 7-7-7" />
-                                        </svg>
-                                    </div>
+                                        [class.bg-red-200]="!event.isPublished"
+                                        [class.text-red-800]="!event.isPublished">
+                                        {{ event.isPublished ? 'Publicado' : 'Borrador'}}
+                                    </p>
                                 </div>
                             </div>
 
@@ -232,7 +215,6 @@
             </div>
             }
 
-            <!-- Registrations Tab -->
             @if (actibeTab === 'registrations') {
             <div class="max-w-4xl mx-auto">
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">Mis Inscripciones</h3>

@@ -25,7 +25,7 @@ public class EventMapper {
                 request.capacity(),
                 0,
                 request.isPublished(),
-                Status.DRAFT,
+                Status.ACTIVE,
                 now,
                 now);
     }

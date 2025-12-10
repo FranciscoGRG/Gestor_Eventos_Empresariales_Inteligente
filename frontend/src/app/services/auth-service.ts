@@ -5,7 +5,6 @@ import { AuthRequestModel } from '../models/auth-request-model';
 import { AuthResponseModel } from '../models/auth-response-model';
 import { Observable, tap } from 'rxjs';
 import { CurrentUserDataModel } from '../models/current-user-data-model';
-import { UserModel } from '../models/user-model';
 
 @Injectable({
   providedIn: 'root',
