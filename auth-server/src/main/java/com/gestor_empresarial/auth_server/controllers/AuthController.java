@@ -24,7 +24,6 @@ import com.gestor_empresarial.auth_server.dtos.UserNotificationDto;
 import com.gestor_empresarial.auth_server.dtos.UserRoleUpdateDto;
 import com.gestor_empresarial.auth_server.models.User;
 import com.gestor_empresarial.auth_server.services.AuthService;
-import org.springframework.web.bind.annotation.RequestParam;
 
 
 @RestController

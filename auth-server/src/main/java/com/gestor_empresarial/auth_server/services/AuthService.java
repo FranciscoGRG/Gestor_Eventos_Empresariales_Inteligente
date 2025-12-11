@@ -6,10 +6,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.gestor_empresarial.auth_server.clients.INotificationFeignClient;
 import com.gestor_empresarial.auth_server.dtos.AuthResponseDto;
 import com.gestor_empresarial.auth_server.dtos.LoginRequestDto;
 import com.gestor_empresarial.auth_server.dtos.RegisterRequestDto;
@@ -27,10 +27,10 @@ public class AuthService {
     private IUserRepository repository;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private KafkaTemplate<String, Object> kafkaTemplate;
 
     @Autowired
-    private INotificationFeignClient notificationFeignClient;
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
     private JwtService jwtService;
@@ -55,8 +55,9 @@ public class AuthService {
 
         String token = jwtService.generateToken(userSaved.getId(), userSaved.getEmail(), userSaved.getRoles());
 
-        notificationFeignClient
-                .sendRegistrationNotification(new UserNotificationDto(userSaved.getFirstName(), userSaved.getEmail()));
+        UserNotificationDto userNotification = new UserNotificationDto(userSaved.getFirstName(), userSaved.getEmail());
+        kafkaTemplate.send("user-created", userNotification);
+
         return new AuthResponseDto(token, userSaved.getEmail(), userSaved.getRoles());
     }
 

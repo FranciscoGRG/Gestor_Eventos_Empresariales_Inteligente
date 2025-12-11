@@ -4,11 +4,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.gestor_empresarial.registration_service.clients.IEventFeignClient;
-import com.gestor_empresarial.registration_service.clients.INotificationFeignClient;
 import com.gestor_empresarial.registration_service.clients.IUserFeignClient;
 import com.gestor_empresarial.registration_service.dtos.EventDto;
 import com.gestor_empresarial.registration_service.dtos.RegistrationNotificationDto;
@@ -30,13 +30,13 @@ public class RegistrationService {
     private IRegistrationRepository repository;
 
     @Autowired
+    private KafkaTemplate<String, Object> kafkaTemplate;
+
+    @Autowired
     private IEventFeignClient eventClient;
 
     @Autowired
     private IUserFeignClient userClient;
-
-    @Autowired
-    private INotificationFeignClient notificationClient;
 
     @Transactional
     public RegistrationResponseDto createRegistration(RegistrationRequestDto request, Long userId) {
@@ -61,8 +61,8 @@ public class RegistrationService {
         UserDto user = userClient.getUserNameAndEmail(userId).getBody();
         EventDto event = eventClient.getEventById(userId).getBody();
 
-        RegistrationNotificationDto notificationDto = new RegistrationNotificationDto(user.userEmail(), user.userName(), event.title(), event.startDate(), event.location());
-        notificationClient.sendInscriptionNotification(notificationDto);
+        RegistrationNotificationDto registrationNotification = new RegistrationNotificationDto(user.userEmail(), user.userName(), event.title(), event.startDate(), event.location());
+        kafkaTemplate.send("registration-event", registrationNotification);
 
         return RegistrationMapper.toResponseDto(savedRegistration);
     }
