@@ -2,6 +2,7 @@ package com.gestor_empresarial.api_gateway.filters;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -42,7 +43,7 @@ class AuthenticationFilterTest {
     @BeforeEach
     void setUp() {
         filterChain = mock(GatewayFilterChain.class);
-        when(filterChain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
+        lenient().when(filterChain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
 
         // Generate a secure key and encode it in Base64
         Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);

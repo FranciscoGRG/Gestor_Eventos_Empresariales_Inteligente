@@ -16,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 
 import com.gestor_empresarial.registration_service.clients.IEventFeignClient;
+import com.gestor_empresarial.registration_service.clients.IUserFeignClient;
 import com.gestor_empresarial.registration_service.dtos.RegistrationRequestDto;
 import com.gestor_empresarial.registration_service.dtos.RegistrationResponseDto;
 import com.gestor_empresarial.registration_service.dtos.UpdateRegistrationStatusDto;
@@ -33,6 +34,12 @@ class RegistrationServiceTest {
 
     @Mock
     private IEventFeignClient eventClient;
+
+    @Mock
+    private IUserFeignClient userClient;
+
+    @Mock
+    private org.springframework.kafka.core.KafkaTemplate<String, Object> kafkaTemplate;
 
     @InjectMocks
     private RegistrationService registrationService;
@@ -58,6 +65,25 @@ class RegistrationServiceTest {
         when(repository.existsByEventIdAndUserId(1L, 1L)).thenReturn(false);
         when(eventClient.reserveCapacityAndRegister(1L, 1L)).thenReturn(ResponseEntity.noContent().build());
         when(repository.save(any(RegistrationModel.class))).thenReturn(registration);
+
+        // Mock User and Event clients responses
+        com.gestor_empresarial.registration_service.dtos.UserDto userDto = new com.gestor_empresarial.registration_service.dtos.UserDto(
+                "john@example.com", "John Doe");
+        when(userClient.getUserNameAndEmail(1L)).thenReturn(ResponseEntity.ok(userDto));
+
+        com.gestor_empresarial.registration_service.dtos.EventDto eventDto = new com.gestor_empresarial.registration_service.dtos.EventDto(
+                1L,
+                "Test Event",
+                "Desc",
+                1L,
+                "Loc",
+                java.time.LocalDateTime.now(),
+                java.time.LocalDateTime.now().plusHours(2),
+                100,
+                0,
+                true,
+                "ACTIVE");
+        when(eventClient.getEventById(1L)).thenReturn(ResponseEntity.ok(eventDto));
 
         RegistrationResponseDto response = registrationService.createRegistration(registrationRequest, 1L);
 

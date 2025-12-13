@@ -63,7 +63,38 @@ services:
     depends_on:
       - zookeeper
 
+  sonarqube:
+    image: sonarqube:community
+    container_name: sonarqube
+    ports:
+      - "9000:9000"
+    environment:
+      - SONAR_JDBC_URL=jdbc:postgresql://db_sonarqube:5432/sonar
+      - SONAR_JDBC_USERNAME=sonar
+      - SONAR_JDBC_PASSWORD=sonar
+    volumes:
+      - sonar_data:/opt/sonarqube/data
+      - sonar_extensions:/opt/sonarqube/extensions
+      - sonar_logs:/opt/sonarqube/logs
+    depends_on:
+      - db_sonarqube
+
+  db_sonarqube:
+    image: postgres:14
+    container_name: db_sonarqube
+    environment:
+      - POSTGRES_USER=sonar
+      - POSTGRES_PASSWORD=sonar
+      - POSTGRES_DB=sonar
+    volumes:
+      - db_sonarqube_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
 volumes:
   db_users_data:
   db_events_data:
   db_registrations_data:
+  sonar_data:
+  sonar_extensions:
+  sonar_logs:
+  db_sonarqube_data:

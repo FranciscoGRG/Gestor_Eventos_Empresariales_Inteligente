@@ -144,13 +144,15 @@ class EventControllerTest {
 
         @Test
         void reserveCapacityAndRegister_ShouldReturnNoContent() throws Exception {
-                mockMvc.perform(post("/api/events/register/1"))
+                mockMvc.perform(post("/api/events/register/1")
+                                .header("X-User-ID", 1L))
                                 .andExpect(status().isNoContent());
         }
 
         @Test
         void releaseCapacity_ShouldReturnNoContent() throws Exception {
-                mockMvc.perform(post("/api/events/release/1"))
+                mockMvc.perform(post("/api/events/release/1")
+                                .header("X-User-ID", 1L))
                                 .andExpect(status().isNoContent());
         }
 }

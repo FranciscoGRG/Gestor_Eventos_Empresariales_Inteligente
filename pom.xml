@@ -23,6 +23,7 @@
     <properties>
         <java.version>21</java.version>
         <spring-cloud.version>2024.0.2</spring-cloud.version>
+        <sonar.host.url>http://localhost:9000</sonar.host.url>
     </properties>
 
     <!-- Spring Cloud BOM -->
@@ -110,7 +111,26 @@
                 </configuration>
             </plugin>
 
+            <!-- Surefire Plugin (Test Configuration) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>-Dnet.bytebuddy.experimental=true -XX:+EnableDynamicAgentLoading</argLine>
+                </configuration>
+            </plugin>
+
         </plugins>
+
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.sonarsource.scanner.maven</groupId>
+                    <artifactId>sonar-maven-plugin</artifactId>
+                    <version>5.0.0.4389</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 
 </project>
