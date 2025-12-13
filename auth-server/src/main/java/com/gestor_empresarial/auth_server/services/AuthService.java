@@ -102,8 +102,8 @@ public class AuthService {
         User user = repository.findById(id).orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUNT_MSG));
 
         return new UserNotificationDto(
-                user.getFirstName(),
-                user.getEmail());
+                user.getEmail(),
+                user.getFirstName());
     }
 
     public void updatedUserRole(Long id, UserRoleUpdateDto updatedUser) {

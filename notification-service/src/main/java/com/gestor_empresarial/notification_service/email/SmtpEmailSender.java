@@ -26,9 +26,7 @@ public class SmtpEmailSender implements EmailSender {
             mailSender.send(mimeMessage);
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
             return false;
         }
     }
-
 }

@@ -130,4 +130,50 @@ class EventServiceTest {
 
         assertThrows(EventNotAvailableException.class, () -> eventService.reserveCapacity(1L));
     }
+
+    @Test
+    void releaseCapacity_ShouldDecreaseRegistered_WhenAvailable() {
+        event.setNumRegistered(1);
+        when(repository.findById(1L)).thenReturn(Optional.of(event));
+
+        eventService.releaseCapacity(1L);
+
+        assertEquals(0, event.getNumRegistered());
+        verify(repository).save(event);
+    }
+
+    @Test
+    void releaseCapacity_ShouldThrowException_WhenZeroRegistered() {
+        event.setNumRegistered(0);
+        when(repository.findById(1L)).thenReturn(Optional.of(event));
+
+        assertThrows(EventNotAvailableException.class, () -> eventService.releaseCapacity(1L));
+    }
+
+    @Test
+    void findAllPublishedAndActiveEvents_ShouldReturnList() {
+        when(repository.findByStatusAndIsPublishedTrue(Status.ACTIVE)).thenReturn(List.of(event));
+        when(mapper.toResponseDto(any(Event.class))).thenReturn(eventResponse);
+
+        List<EventResponseDto> list = eventService.findAllPublishedAndActiveEvents();
+        assertFalse(list.isEmpty());
+    }
+
+    @Test
+    void findPublishedEventById_ShouldReturnEvent_WhenFoundAndPublished() {
+        when(repository.findById(1L)).thenReturn(Optional.of(event));
+        when(mapper.toResponseDto(any(Event.class))).thenReturn(eventResponse);
+
+        EventResponseDto dto = eventService.findPublishedEventById(1L);
+        assertNotNull(dto);
+    }
+
+    @Test
+    void findPublishedEventsByTitle_ShouldReturnList() {
+        when(repository.findByTitleContainingIgnoreCaseAndIsPublishedTrue("Test")).thenReturn(List.of(event));
+        when(mapper.toResponseDto(any(Event.class))).thenReturn(eventResponse);
+
+        List<EventResponseDto> list = eventService.findPublishedEventsByTitle("Test");
+        assertFalse(list.isEmpty());
+    }
 }

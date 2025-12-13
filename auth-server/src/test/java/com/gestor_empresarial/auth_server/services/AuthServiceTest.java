@@ -58,7 +58,7 @@ class AuthServiceTest {
         user.setLastName("Doe");
         user.setEmail("john@example.com");
         user.setPassword("encodedPassword");
-        user.setRoles(Set.of(Role.ROLE_USER));
+        user.setRoles(new java.util.HashSet<>(Set.of(Role.ROLE_USER)));
     }
 
     @Test
@@ -105,7 +105,7 @@ class AuthServiceTest {
                 () -> authService.login(loginRequest),
                 "Debe lanzar RunTimeException cuando no existe el usuario");
 
-        assertEquals("Usuario no encontrado", thrown.getMessage()); 
+        assertEquals("Usuario no encontrado", thrown.getMessage());
     }
 
     @Test
@@ -114,5 +114,49 @@ class AuthServiceTest {
         when(passwordEncoder.matches(loginRequest.password(), user.getPassword())).thenReturn(false);
 
         assertThrows(BadCredentialsException.class, () -> authService.login(loginRequest));
+    }
+
+    @Test
+    void findAll_ShouldReturnList() {
+        when(repository.findAll()).thenReturn(java.util.List.of(user));
+        assertFalse(authService.findAll().isEmpty());
+    }
+
+    @Test
+    void getProfile_ShouldReturnUser_WhenFound() {
+        when(repository.findByEmail("john@example.com")).thenReturn(Optional.of(user));
+        assertNotNull(authService.getProfile("john@example.com"));
+    }
+
+    @Test
+    void getProfileByEmail_ShouldReturnDto_WhenFound() {
+        when(repository.findByEmail("john@example.com")).thenReturn(Optional.of(user));
+        assertNotNull(authService.getProfileByEmail("john@example.com"));
+    }
+
+    @Test
+    void deleteUser_ShouldDelete_WhenFound() {
+        when(repository.findById(1L)).thenReturn(Optional.of(user));
+        authService.deleteUser(1L);
+        verify(repository).delete(user);
+    }
+
+    @Test
+    void updatedUserRole_ShouldUpdate_WhenUserFoundAndRoleValid() {
+        when(repository.findById(1L)).thenReturn(Optional.of(user));
+        com.gestor_empresarial.auth_server.dtos.UserRoleUpdateDto updateDto = new com.gestor_empresarial.auth_server.dtos.UserRoleUpdateDto(
+                "ROLE_ADMIN");
+
+        authService.updatedUserRole(1L, updateDto);
+
+        verify(repository).save(user);
+        assertTrue(user.getRoles().contains(Role.ROLE_ADMIN));
+    }
+
+    @Test
+    void getUserNameAndEmail_ShouldReturnNotificationDto() {
+        when(repository.findById(1L)).thenReturn(Optional.of(user));
+        com.gestor_empresarial.auth_server.dtos.UserNotificationDto dto = authService.getUserNameAndEmail(1L);
+        assertEquals("john@example.com", dto.userEmail());
     }
 }

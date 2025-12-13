@@ -1,7 +1,6 @@
 package com.gestor_empresarial.registration_service.services;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
