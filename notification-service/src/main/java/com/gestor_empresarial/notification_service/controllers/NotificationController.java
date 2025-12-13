@@ -8,7 +8,6 @@ import com.gestor_empresarial.notification_service.dtos.RegistrationNotification
 import com.gestor_empresarial.notification_service.dtos.ReminderNotificationRequestDto;
 import com.gestor_empresarial.notification_service.services.NotificationService;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,8 +17,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequestMapping("/api/notifications")
 public class NotificationController {
 
-    @Autowired
-    private NotificationService service;
+    private final NotificationService service;
+
+    public NotificationController(NotificationService service) {
+        this.service = service;
+    }
 
     @PostMapping("/registration")
     public ResponseEntity<Void> sendRegistrationNotification(@RequestBody RegistrationNotificationRequestDto request) {

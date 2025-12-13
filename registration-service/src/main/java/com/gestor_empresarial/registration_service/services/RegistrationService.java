@@ -3,7 +3,6 @@ package com.gestor_empresarial.registration_service.services;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +17,7 @@ import com.gestor_empresarial.registration_service.dtos.UpdateRegistrationStatus
 import com.gestor_empresarial.registration_service.dtos.UserDto;
 import com.gestor_empresarial.registration_service.enums.RegistrationStatus;
 import com.gestor_empresarial.registration_service.exceptions.AlreadyRegisteredException;
+import com.gestor_empresarial.registration_service.exceptions.CapacityErrorException;
 import com.gestor_empresarial.registration_service.exceptions.RegistrationNotFoundException;
 import com.gestor_empresarial.registration_service.mappers.RegistrationMapper;
 import com.gestor_empresarial.registration_service.models.RegistrationModel;
@@ -26,17 +26,22 @@ import com.gestor_empresarial.registration_service.repositories.IRegistrationRep
 @Service
 public class RegistrationService {
 
-    @Autowired
-    private IRegistrationRepository repository;
 
-    @Autowired
-    private KafkaTemplate<String, Object> kafkaTemplate;
+    private final IRegistrationRepository repository;
 
-    @Autowired
-    private IEventFeignClient eventClient;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    @Autowired
-    private IUserFeignClient userClient;
+    private final IEventFeignClient eventClient;
+
+    private final IUserFeignClient userClient;
+
+    public RegistrationService(IRegistrationRepository repository, KafkaTemplate<String, Object> kafkaTemplate,
+            IEventFeignClient eventClient, IUserFeignClient userClient) {
+        this.repository = repository;
+        this.kafkaTemplate = kafkaTemplate;
+        this.eventClient = eventClient;
+        this.userClient = userClient;
+    }
 
     @Transactional
     public RegistrationResponseDto createRegistration(RegistrationRequestDto request, Long userId) {
@@ -48,7 +53,7 @@ public class RegistrationService {
         try {
             eventClient.reserveCapacityAndRegister(request.eventId(), userId);
         } catch (Exception e) {
-            throw new RuntimeException("Fallo en la reserva de capacidad del event service: " + e.getMessage(), e);
+            throw new CapacityErrorException("Fallo en la reserva, capacidad del evento llena");
         }
 
         RegistrationModel registration = new RegistrationModel();
@@ -68,23 +73,15 @@ public class RegistrationService {
     }
 
     public List<RegistrationResponseDto> findAllByUserId(Long userId) {
-        List<RegistrationModel> registrations = repository.findAllByUserId(userId);
-
-        List<RegistrationResponseDto> registrationsDto = registrations.stream()
+        return repository.findAllByUserId(userId).stream()
                 .map(RegistrationMapper::toResponseDto)
-                .collect(Collectors.toList());
-
-        return registrationsDto;
+                .toList();
     }
 
     public List<RegistrationResponseDto> findAllByEventId(Long eventId) {
-        List<RegistrationModel> registrations = repository.findAllByEventId(eventId);
-
-        List<RegistrationResponseDto> registrationsDto = registrations.stream()
+        return repository.findAllByEventId(eventId).stream()
                 .map(RegistrationMapper::toResponseDto)
-                .collect(Collectors.toList());
-
-        return registrationsDto;
+                .toList();
     }
 
     @Transactional
@@ -110,8 +107,7 @@ public class RegistrationService {
         try {
             eventClient.releaseCapacity(eventId, userId);
         } catch (Exception e) {
-            throw new RuntimeException("Fallo al reducir la cantidad de registros en event service: " + e.getMessage(),
-                    e);
+            throw new CapacityErrorException("Fallo al reducir la cantidad de registros en el evento");
         }
 
         repository.delete(registration);

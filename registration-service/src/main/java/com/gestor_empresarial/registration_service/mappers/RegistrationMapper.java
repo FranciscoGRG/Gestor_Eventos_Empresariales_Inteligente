@@ -3,10 +3,10 @@ package com.gestor_empresarial.registration_service.mappers;
 import com.gestor_empresarial.registration_service.dtos.RegistrationResponseDto;
 import com.gestor_empresarial.registration_service.models.RegistrationModel;
 
-import lombok.NoArgsConstructor;
-
-@NoArgsConstructor
 public class RegistrationMapper {
+
+    private RegistrationMapper() {
+    }
 
     public static RegistrationResponseDto toResponseDto(RegistrationModel model) {
         if (model == null) {

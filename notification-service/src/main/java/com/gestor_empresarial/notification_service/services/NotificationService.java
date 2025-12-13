@@ -1,6 +1,5 @@
 package com.gestor_empresarial.notification_service.services;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.gestor_empresarial.notification_service.dtos.InscriptionNotificationRequestDto;
@@ -11,11 +10,14 @@ import com.gestor_empresarial.notification_service.email.EmailSender;
 @Service
 public class NotificationService {
 
-    @Autowired
-    private EmailSender emailSender;
+    private final EmailSender emailSender;
 
-    @Autowired
-    private NotificationTemplateService templateService;
+    private final NotificationTemplateService templateService;
+
+    public NotificationService(EmailSender emailSender, NotificationTemplateService templateService) {
+        this.emailSender = emailSender;
+        this.templateService = templateService;
+    }
 
     public void sendRegistrationNotification(RegistrationNotificationRequestDto request) {
         emailSender.send(request.getUserEmail(), "Bienvenido a E-Event Manager",

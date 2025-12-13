@@ -5,7 +5,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.security.Key;
 import java.util.Base64;
@@ -45,7 +44,6 @@ class AuthenticationFilterTest {
         filterChain = mock(GatewayFilterChain.class);
         lenient().when(filterChain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
 
-        // Generate a secure key and encode it in Base64
         Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
         secretKey = Base64.getEncoder().encodeToString(key.getEncoded());
 

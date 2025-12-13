@@ -2,7 +2,6 @@ package com.gestor_empresarial.auth_server.config;
 
 import java.io.IOException;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -32,11 +31,14 @@ import jakarta.servlet.http.HttpServletResponse;
 @EnableWebSecurity
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-    @Autowired
-    private JwtService jwtService;
+    private final JwtService jwtService;
 
-    @Autowired
-    private JpaUserDetailsService userDetailsService;
+    private final JpaUserDetailsService userDetailsService;
+
+    public JwtAuthFilter(JwtService jwtService, JpaUserDetailsService userDetailsService) {
+        this.jwtService = jwtService;
+        this.userDetailsService = userDetailsService;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -61,7 +63,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request,
             HttpServletResponse response,
-            FilterChain filterChain) throws ServletException, IOException, java.io.IOException {
+            FilterChain filterChain) throws ServletException, IOException {
 
         String path = request.getRequestURI();
 

@@ -1,6 +1,5 @@
 package com.gestor_empresarial.notification_service.email;
 
-import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -8,8 +7,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class SmtpEmailSender implements EmailSender {
 
-    @Autowired
-    private JavaMailSender mailSender;
+    private final JavaMailSender mailSender;
+
+    public SmtpEmailSender(JavaMailSender mailSender) {
+        this.mailSender = mailSender;
+    }
 
     @Override
     public boolean send(String to, String subject, String body) {

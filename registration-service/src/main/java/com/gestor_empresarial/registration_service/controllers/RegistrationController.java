@@ -10,7 +10,6 @@ import com.gestor_empresarial.registration_service.services.RegistrationService;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,8 +23,11 @@ import org.springframework.web.bind.annotation.PutMapping;
 @RequestMapping("/api/registrations")
 public class RegistrationController {
 
-    @Autowired
-    private RegistrationService service;
+    private final RegistrationService service;
+
+    public RegistrationController(RegistrationService service) {
+        this.service = service;
+    }
 
     @GetMapping("/user")
     public ResponseEntity<List<RegistrationResponseDto>> getAllRegistrationsByUserId(

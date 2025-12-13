@@ -1,6 +1,5 @@
 package com.gestor_empresarial.auth_server.services;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -11,8 +10,11 @@ import com.gestor_empresarial.auth_server.repositories.IUserRepository;
 @Service
 public class JpaUserDetailsService implements UserDetailsService {
 
-    @Autowired
-    private IUserRepository repository;
+    private final IUserRepository repository;
+
+    public JpaUserDetailsService(IUserRepository repository) {
+        this.repository = repository;
+    }
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {

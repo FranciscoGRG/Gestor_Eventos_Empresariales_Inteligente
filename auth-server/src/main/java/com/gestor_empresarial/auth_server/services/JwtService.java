@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -39,7 +38,7 @@ public class JwtService {
         Map<String, Object> claims = new HashMap<>();
         List<String> roleNames = roles.stream()
                                       .map(Enum::name)
-                                      .collect(Collectors.toList());
+                                      .toList();
         claims.put("roles", roleNames);
         claims.put("email", email);
         return createToken(claims, userId);

@@ -1,6 +1,5 @@
 package com.gestor_empresarial.notification_service.services;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -11,8 +10,12 @@ import com.gestor_empresarial.notification_service.dtos.ReminderNotificationRequ
 
 @Service
 public class NotificationTemplateService {
-    @Autowired
-    TemplateEngine templateEngine;
+
+    private final TemplateEngine templateEngine;
+
+    public NotificationTemplateService(TemplateEngine templateEngine) {
+        this.templateEngine = templateEngine;
+    }
 
     public String buildRegistrationEmail(RegistrationNotificationRequestDto request) {
         Context ctx = new Context();

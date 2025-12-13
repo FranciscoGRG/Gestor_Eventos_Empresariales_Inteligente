@@ -1,7 +1,7 @@
 package com.gestor_empresarial.api_gateway.filters;
 
 import java.security.Key;
-import java.util.Base64; // Importación necesaria para manejar la clave secreta
+import java.util.Base64; 
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +11,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
+
+import com.gestor_empresarial.api_gateway.exceptions.ExpiredTokenException;
+import com.gestor_empresarial.api_gateway.exceptions.InvalidTokenException;
+
 import reactor.core.publisher.Mono;
 
 import io.jsonwebtoken.Claims;
@@ -47,9 +51,9 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                     .parseClaimsJws(jwt)
                     .getBody();
         } catch (ExpiredJwtException e) {
-            throw new RuntimeException("Token expirado", e);
+            throw new ExpiredTokenException("Token expirado", e);
         } catch (MalformedJwtException | IllegalArgumentException e) {
-            throw new RuntimeException("Token inválido o mal formado", e);
+            throw new InvalidTokenException("Token inválido o mal formado", e);
         }
     }
 
@@ -93,7 +97,8 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
         return exchange.getResponse().setComplete();
     }
 
-    public static class Config {
+    @SuppressWarnings("java:S2972")
+    public static final class Config {
     }
 
 }

@@ -1,6 +1,5 @@
 package com.gestor_empresarial.notification_service.listeners;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
@@ -14,8 +13,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class NotificationListener {
 
-    @Autowired
-    private NotificationService service;
+    private final NotificationService service;
+
+    public NotificationListener(NotificationService service) {
+        this.service = service;
+    }
 
     @KafkaListener(topics = "user-created", groupId = "notification-group")
     public void handleUserCreated(RegistrationNotificationRequestDto event) {

@@ -5,7 +5,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -30,17 +29,21 @@ public class AuthService {
     private static final String BAD_CREDENTIALS_MSG = "Credenciales incorrectas";
     private static final String USER_ALREADY_EXISTS_MSG = "El usuario ya existe";
 
-    @Autowired
-    private IUserRepository repository;
+    private final IUserRepository repository;
 
-    @Autowired
-    private KafkaTemplate<String, Object> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private JwtService jwtService;
+    private final JwtService jwtService;
+
+    public AuthService(IUserRepository repository, KafkaTemplate<String, Object> kafkaTemplate,
+            PasswordEncoder passwordEncoder, JwtService jwtService) {
+        this.repository = repository;
+        this.kafkaTemplate = kafkaTemplate;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
+    }
 
     public List<User> findAll() {
         return repository.findAll();
@@ -98,11 +101,9 @@ public class AuthService {
     public UserNotificationDto getUserNameAndEmail(Long id) {
         User user = repository.findById(id).orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUNT_MSG));
 
-        UserNotificationDto userNotification = new UserNotificationDto(
+        return new UserNotificationDto(
                 user.getFirstName(),
                 user.getEmail());
-
-        return userNotification;
     }
 
     public void updatedUserRole(Long id, UserRoleUpdateDto updatedUser) {
@@ -126,18 +127,17 @@ public class AuthService {
     }
 
     private UserDto mapUserToDto(User user) {
-       
+
         Set<String> roleNames = user.getRoles().stream()
                 .map(role -> role.name())
-                .collect(Collectors.toSet()); 
+                .collect(Collectors.toSet());
 
         return new UserDto(
                 user.getId(),
                 user.getFirstName(),
                 user.getLastName(),
                 user.getEmail(),
-                roleNames
-        );
+                roleNames);
     }
 
 }

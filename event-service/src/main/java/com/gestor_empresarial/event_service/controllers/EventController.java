@@ -11,7 +11,6 @@ import com.gestor_empresarial.event_service.services.EventService;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,8 +24,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 @RequestMapping("/api/events")
 public class EventController {
 
-    @Autowired
-    private EventService service;
+    private final EventService service;
+
+    public EventController(EventService service) {
+        this.service = service;
+    }
 
     @GetMapping("/title/{name}")
     public ResponseEntity<List<EventResponseDto>> getPublishedEventsByTitle(@PathVariable String name) {

@@ -2,7 +2,6 @@ package com.gestor_empresarial.auth_server.controllers;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -30,8 +29,11 @@ import com.gestor_empresarial.auth_server.services.AuthService;
 @RequestMapping("api/auth")
 public class AuthController {
 
-    @Autowired
-    private AuthService authService;
+    private final AuthService authService;
+
+    public AuthController(AuthService authService) {
+        this.authService = authService;
+    }
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponseDto> register(@RequestBody RegisterRequestDto request) {
