@@ -19,6 +19,9 @@ import com.gestor_empresarial.auth_server.dtos.AuthResponseDto;
 import com.gestor_empresarial.auth_server.dtos.LoginRequestDto;
 import com.gestor_empresarial.auth_server.dtos.RegisterRequestDto;
 import com.gestor_empresarial.auth_server.enums.Role;
+import com.gestor_empresarial.auth_server.exceptions.BadCredentialsException;
+import com.gestor_empresarial.auth_server.exceptions.UserAlreadyExists;
+import com.gestor_empresarial.auth_server.exceptions.UserNotFoundException;
 import com.gestor_empresarial.auth_server.models.User;
 import com.gestor_empresarial.auth_server.repositories.IUserRepository;
 
@@ -77,7 +80,7 @@ class AuthServiceTest {
     void register_ShouldThrowException_WhenEmailAlreadyExists() {
         when(repository.existsByEmail(registerRequest.email())).thenReturn(true);
 
-        assertThrows(RuntimeException.class, () -> authService.register(registerRequest));
+        assertThrows(UserAlreadyExists.class, () -> authService.register(registerRequest));
         verify(repository, never()).save(any(User.class));
     }
 
@@ -97,7 +100,12 @@ class AuthServiceTest {
     void login_ShouldThrowException_WhenUserNotFound() {
         when(repository.findByEmail(loginRequest.email())).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> authService.login(loginRequest));
+        UserNotFoundException thrown = assertThrows(
+                UserNotFoundException.class,
+                () -> authService.login(loginRequest),
+                "Debe lanzar RunTimeException cuando no existe el usuario");
+
+        assertEquals("Usuario no encontrado", thrown.getMessage()); 
     }
 
     @Test
@@ -105,6 +113,6 @@ class AuthServiceTest {
         when(repository.findByEmail(loginRequest.email())).thenReturn(Optional.of(user));
         when(passwordEncoder.matches(loginRequest.password(), user.getPassword())).thenReturn(false);
 
-        assertThrows(RuntimeException.class, () -> authService.login(loginRequest));
+        assertThrows(BadCredentialsException.class, () -> authService.login(loginRequest));
     }
 }

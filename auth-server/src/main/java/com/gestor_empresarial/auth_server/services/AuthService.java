@@ -17,11 +17,18 @@ import com.gestor_empresarial.auth_server.dtos.UserDto;
 import com.gestor_empresarial.auth_server.dtos.UserNotificationDto;
 import com.gestor_empresarial.auth_server.dtos.UserRoleUpdateDto;
 import com.gestor_empresarial.auth_server.enums.Role;
+import com.gestor_empresarial.auth_server.exceptions.BadCredentialsException;
+import com.gestor_empresarial.auth_server.exceptions.UserAlreadyExists;
+import com.gestor_empresarial.auth_server.exceptions.UserNotFoundException;
 import com.gestor_empresarial.auth_server.models.User;
 import com.gestor_empresarial.auth_server.repositories.IUserRepository;
 
 @Service
 public class AuthService {
+
+    private static final String USER_NOT_FOUNT_MSG = "Usuario no encontrado";
+    private static final String BAD_CREDENTIALS_MSG = "Credenciales incorrectas";
+    private static final String USER_ALREADY_EXISTS_MSG = "El usuario ya existe";
 
     @Autowired
     private IUserRepository repository;
@@ -41,7 +48,7 @@ public class AuthService {
 
     public AuthResponseDto register(RegisterRequestDto request) {
         if (repository.existsByEmail(request.email())) {
-            throw new RuntimeException("El email ya esta en uso");
+            throw new UserAlreadyExists(USER_ALREADY_EXISTS_MSG);
         }
 
         User user = new User();
@@ -63,10 +70,10 @@ public class AuthService {
 
     public AuthResponseDto login(LoginRequestDto request) {
         User user = repository.findByEmail(request.email())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUNT_MSG));
 
         if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-            throw new RuntimeException("Usuario o contraseña incorrectos");
+            throw new BadCredentialsException(BAD_CREDENTIALS_MSG);
         }
 
         String token = jwtService.generateToken(user.getId(), user.getEmail(), user.getRoles());
@@ -74,22 +81,22 @@ public class AuthService {
     }
 
     public User getProfile(String email) {
-        return repository.findByEmail(email).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        return repository.findByEmail(email).orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUNT_MSG));
     }
 
     public UserDto getProfileByEmail(String email) {
-        User user = repository.findByEmail(email).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        User user = repository.findByEmail(email).orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUNT_MSG));
 
         return mapUserToDto(user);
     }
 
     public void deleteUser(Long id) {
-        User user = repository.findById(id).orElseThrow(() -> new RuntimeException("El user no existe"));
+        User user = repository.findById(id).orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUNT_MSG));
         repository.delete(user);
     }
 
     public UserNotificationDto getUserNameAndEmail(Long id) {
-        User user = repository.findById(id).orElseThrow(() -> new RuntimeException("El user no existe"));
+        User user = repository.findById(id).orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUNT_MSG));
 
         UserNotificationDto userNotification = new UserNotificationDto(
                 user.getFirstName(),
@@ -99,14 +106,14 @@ public class AuthService {
     }
 
     public void updatedUserRole(Long id, UserRoleUpdateDto updatedUser) {
-        User existingUser = repository.findById(id).orElseThrow(() -> new RuntimeException("El user no existe"));
+        User existingUser = repository.findById(id).orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUNT_MSG));
 
         Role newRole;
 
         try {
             newRole = Role.valueOf(updatedUser.newRole());
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException("El rol especificado no es válido");
+            throw new IllegalArgumentException("El rol especificado no es válido");
         }
 
         existingUser.getRoles().add(newRole);
@@ -119,20 +126,17 @@ public class AuthService {
     }
 
     private UserDto mapUserToDto(User user) {
-        // Asegúrate de que tu UserDto acepta los campos que estás enviando (id, name,
-        // email, roles(Set<String>))
-
-        // 1. Convertir Set<Role> a Set<String>
+       
         Set<String> roleNames = user.getRoles().stream()
                 .map(role -> role.name())
-                .collect(Collectors.toSet()); // Necesitas importar java.util.stream.Collectors
+                .collect(Collectors.toSet()); 
 
         return new UserDto(
-                user.getId(), // Asumiendo que UserDto tiene Long id
+                user.getId(),
                 user.getFirstName(),
                 user.getLastName(),
                 user.getEmail(),
-                roleNames // El campo Set<String>
+                roleNames
         );
     }
 
