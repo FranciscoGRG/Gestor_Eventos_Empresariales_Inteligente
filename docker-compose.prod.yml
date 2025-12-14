@@ -1,0 +1,131 @@
+version: '3.8'
+services:
+  # Infrastructure
+  db_users:
+    image: postgres:14
+    container_name: db_users
+    environment:
+      - POSTGRES_DB=users_db
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - db_users_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  db_events:
+    image: postgres:14
+    container_name: db_events
+    environment:
+      - POSTGRES_DB=events_db
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - db_events_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  db_registration:
+    image: postgres:14
+    container_name: db_registration
+    environment:
+      - POSTGRES_DB=registrations_db
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - db_registrations_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  zookeeper:
+    image: zookeeper:3.9
+    container_name: zookeeper
+    environment:
+      ZOO_PORT: 2181
+
+  kafka:
+    image: confluentinc/cp-kafka:5.5.1
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: INTERNAL://:9092,EXTERNAL://:29092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,EXTERNAL://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  # Applications
+  eureka-server:
+    build: ./eureka-server
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "8082:8082"
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    depends_on:
+      - eureka-server
+
+  auth-server:
+    build: ./auth-server
+    container_name: auth-server
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db_users:5432/users_db
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    depends_on:
+      - db_users
+      - kafka
+      - eureka-server
+
+  event-service:
+    build: ./event-service
+    container_name: event-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db_events:5432/events_db
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    depends_on:
+      - db_events
+      - kafka
+      - eureka-server
+
+  registration-service:
+    build: ./registration-service
+    container_name: registration-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db_registration:5432/registrations_db
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    depends_on:
+      - db_registration
+      - kafka
+      - eureka-server
+
+  notification-service:
+    build: ./notification-service
+    container_name: notification-service
+    environment:
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    depends_on:
+      - kafka
+      - eureka-server
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - api-gateway
+
+volumes:
+  db_users_data:
+  db_events_data:
+  db_registrations_data:
