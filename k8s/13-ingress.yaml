@@ -1,0 +1,30 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: event-manager-ingress
+  namespace: event-manager
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    # Optional: If you need to strip /api prefix when forwarding to gateway, check gateway config.
+    # Usually API Gateway expects /api/..., if so, no rewrite needed for /api path if it matches.
+    # If Gateway is at root, then we might need rewrite.
+    # Assuming Gateway context path is / or handles routing internally.
+spec:
+  rules:
+  - host: event-manager.local
+    http:
+      paths:
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: api-gateway
+            port:
+              number: 8082
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend
+            port:
+              number: 80

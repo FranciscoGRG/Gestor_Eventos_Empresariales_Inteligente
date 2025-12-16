@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: registration-service
+  namespace: event-manager
+spec:
+  selector:
+    matchLabels:
+      app: registration-service
+  template:
+    metadata:
+      labels:
+        app: registration-service
+    spec:
+      containers:
+      - name: registration-service
+        image: gestor_eventos_empresariales_inteligente-registration-service:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: DB_REGISTRATION_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: DB_REGISTRATION_HOST
+        - name: SPRING_DATASOURCE_URL
+          value: "jdbc:postgresql://$(DB_REGISTRATION_HOST):5432/registrations_db"
+        - name: SPRING_DATASOURCE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: username
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: password
+        - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: SPRING_KAFKA_BOOTSTRAP_SERVERS
+        - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: registration-service
+  namespace: event-manager
+spec:
+  selector:
+    app: registration-service
+  ports:
+  - port: 8080
+    targetPort: 8080

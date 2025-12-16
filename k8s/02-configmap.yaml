@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: event-manager
+data:
+  EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
+  SPRING_KAFKA_BOOTSTRAP_SERVERS: "kafka-cluster:9092"
+  DB_USERS_HOST: "db-users"
+  DB_EVENTS_HOST: "db-events"
+  DB_REGISTRATION_HOST: "db-registration"

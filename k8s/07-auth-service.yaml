@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-server
+  namespace: event-manager
+spec:
+  selector:
+    matchLabels:
+      app: auth-server
+  template:
+    metadata:
+      labels:
+        app: auth-server
+    spec:
+      containers:
+      - name: auth-server
+        image: gestor_eventos_empresariales_inteligente-auth-server:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: DB_USERS_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: DB_USERS_HOST
+        - name: SPRING_DATASOURCE_URL
+          value: "jdbc:postgresql://$(DB_USERS_HOST):5432/users_db"
+        - name: SPRING_DATASOURCE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: username
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: password
+        - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: SPRING_KAFKA_BOOTSTRAP_SERVERS
+        - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-server
+  namespace: event-manager
+spec:
+  selector:
+    app: auth-server
+  ports:
+  - port: 8080 # Assuming default Spring Boot port, mapping to 8080 internal
+    targetPort: 8080

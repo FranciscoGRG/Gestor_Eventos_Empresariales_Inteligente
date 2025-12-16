@@ -1,13 +1,14 @@
 package com.gestor_empresarial.api_gateway.filters;
 
 import java.security.Key;
-import java.util.Base64; 
+import java.util.Base64;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
@@ -31,8 +32,9 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
 
     private static final List<String> OPEN_API_ENDPOINTS = List.of(
             "/api/auth/register",
-            "/api/auth/login");
-    
+            "/api/auth/login"
+    );
+
     public AuthenticationFilter() {
         super(Config.class);
     }
@@ -43,7 +45,7 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
     }
 
     private Claims validateAndExtractClaims(String token) {
-        String jwt = token.replace("Bearer ", ""); 
+        String jwt = token.replace("Bearer ", "");
         try {
             return Jwts.parserBuilder()
                     .setSigningKey(getSigningKey())
@@ -57,40 +59,61 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
         }
     }
 
-
     @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
+
+            // 1️⃣ Manejar preflight CORS
+            if (exchange.getRequest().getMethod() == HttpMethod.OPTIONS) {
+                return handlePreflight(exchange);
+            }
+
             String requestPath = exchange.getRequest().getURI().getPath();
 
+            // 2️⃣ Endpoints públicos (sin JWT)
             if (OPEN_API_ENDPOINTS.stream().anyMatch(requestPath::startsWith)) {
                 return chain.filter(exchange);
             }
 
+            // 3️⃣ Endpoints protegidos (JWT)
             if (!exchange.getRequest().getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
-                return this.onError(exchange, "Authorization header is missing", HttpStatus.UNAUTHORIZED);
+                return onError(exchange, "Authorization header is missing", HttpStatus.UNAUTHORIZED);
             }
 
             String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
             try {
                 Claims claims = validateAndExtractClaims(authHeader);
-                
-                String userIdString = claims.getSubject(); 
+                String userIdString = claims.getSubject();
 
                 ServerWebExchange mutatedExchange = exchange.mutate()
-                        .request(r -> r.header("X-User-ID", userIdString)) 
+                        .request(r -> r.header("X-User-ID", userIdString))
                         .build();
 
                 return chain.filter(mutatedExchange);
 
             } catch (RuntimeException e) {
-                return this.onError(exchange, "Authentication failed: " + e.getMessage(), HttpStatus.UNAUTHORIZED);
+                return onError(exchange, "Authentication failed: " + e.getMessage(), HttpStatus.UNAUTHORIZED);
             }
         };
     }
 
+    // Maneja preflight OPTIONS con headers CORS correctos
+    private Mono<Void> handlePreflight(ServerWebExchange exchange) {
+        exchange.getResponse().getHeaders().add("Access-Control-Allow-Origin", "http://localhost:8080");
+        exchange.getResponse().getHeaders().add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        exchange.getResponse().getHeaders().add("Access-Control-Allow-Headers", "*");
+        exchange.getResponse().getHeaders().add("Access-Control-Allow-Credentials", "true");
+        exchange.getResponse().setStatusCode(HttpStatus.OK);
+        return exchange.getResponse().setComplete();
+    }
+
+    // Maneja errores con headers CORS para que el navegador no bloquee
     private Mono<Void> onError(ServerWebExchange exchange, String error, HttpStatus httpStatus) {
+        exchange.getResponse().getHeaders().add("Access-Control-Allow-Origin", "http://localhost:8080");
+        exchange.getResponse().getHeaders().add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        exchange.getResponse().getHeaders().add("Access-Control-Allow-Headers", "*");
+        exchange.getResponse().getHeaders().add("Access-Control-Allow-Credentials", "true");
         exchange.getResponse().setStatusCode(httpStatus);
         exchange.getResponse().getHeaders().add("Content-Type", "application/json");
         exchange.getResponse().getHeaders().add("X-Error-Reason", error);
@@ -100,5 +123,4 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
     @SuppressWarnings("java:S2972")
     public static final class Config {
     }
-
 }

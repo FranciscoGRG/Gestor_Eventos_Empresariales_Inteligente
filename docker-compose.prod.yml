@@ -57,12 +57,14 @@ services:
   # Applications
   eureka-server:
     build: ./eureka-server
+    image: gestor_eventos_empresariales_inteligente-eureka-server:latest
     container_name: eureka-server
     ports:
       - "8761:8761"
 
   api-gateway:
     build: ./api-gateway
+    image: gestor_eventos_empresariales_inteligente-api-gateway:latest
     container_name: api-gateway
     ports:
       - "8082:8082"
@@ -73,6 +75,7 @@ services:
 
   auth-server:
     build: ./auth-server
+    image: gestor_eventos_empresariales_inteligente-auth-server:latest
     container_name: auth-server
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db_users:5432/users_db
@@ -85,6 +88,7 @@ services:
 
   event-service:
     build: ./event-service
+    image: gestor_eventos_empresariales_inteligente-event-service:latest
     container_name: event-service
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db_events:5432/events_db
@@ -97,6 +101,7 @@ services:
 
   registration-service:
     build: ./registration-service
+    image: gestor_eventos_empresariales_inteligente-registration-service:latest
     container_name: registration-service
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db_registration:5432/registrations_db
@@ -109,6 +114,7 @@ services:
 
   notification-service:
     build: ./notification-service
+    image: gestor_eventos_empresariales_inteligente-notification-service:latest
     container_name: notification-service
     environment:
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
@@ -119,6 +125,7 @@ services:
 
   frontend:
     build: ./frontend
+    image: gestor_eventos_empresariales_inteligente-frontend:latest
     container_name: frontend
     ports:
       - "80:80"

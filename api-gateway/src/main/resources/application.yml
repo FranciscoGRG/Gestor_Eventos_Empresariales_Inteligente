@@ -1,6 +1,10 @@
 server:
   port: 8082 
 
+logging:
+  level:
+    org.springframework.web.cors: DEBUG
+    
 spring:
   application:
     name: api-gateway
@@ -8,6 +12,22 @@ spring:
     gateway:
       default-filters:
       - AuthenticationFilter
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:8080"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders:
+              - "*"
+            allowCredentials: true
+
       routes:
         - id: auth-server
           uri: lb://auth-server
